@@ -32,6 +32,38 @@ def to_float(val):
 # -------------------------------
 # SIDEBAR
 # -------------------------------
+
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, #0f172a, black);
+            color: white;
+            padding-top: 20px;
+            border-radius : 10px 0px 0px 10px;,
+        }
+
+        [data-testid="stAppViewContainer"] {
+            background: linear-gradient(180deg, #0f172a, black);
+            padding: 10px;
+        }
+
+        /* Conteneur principal du contenu */
+        .main > div {
+            background-color: grey !important;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        [data-testid="stHeader"] {
+            background: linear-gradient(90deg, #0f172a);
+            color: white;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 with st.sidebar:
     st.subheader("Date & Time")
     with st.container(border=True):
