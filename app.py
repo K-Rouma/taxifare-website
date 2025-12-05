@@ -65,19 +65,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-with st.sidebar:
-    st.subheader("Date & Time")
-    with st.container(border=True):
 
-        with st.container(horizontal=True):
-            date = st.date_input("Date", width=100)
-            time = st.time_input("Time", width=100, step=60)
-
-        st.write(f"Date & Time selected : {date} at {time}")
-
-    st.subheader("Passenger's details")
-    with st.container(border=True):
-        passenger_count = st.slider("Select passenger number", min_value=1, max_value=10)
 
 
 url = 'https://taxifare.lewagon.ai/predict'
@@ -89,7 +77,7 @@ url = 'https://taxifare.lewagon.ai/predict'
 st.subheader("Pickup Geolocation")
 with st.container(border=True):
 
-    st.markdown("### Autodetect")
+    st.markdown("#### Autodetect")
 
     location = streamlit_geolocation()
     auto_longitude = location.get("longitude")
@@ -102,12 +90,12 @@ with st.container(border=True):
         st.info("Click the button above to detect your position.")
 
     st.markdown("---")
-    st.markdown("### Manual input")
+    st.markdown("#### Manual input")
+    with st.expander("### Select coordinate manually"):
+        manual_lon_input = st.text_input("Enter pickup longitude manually", width=220)
+        manual_lat_input = st.text_input("Enter pickup latitude manually", width=220)
 
-    manual_lon_input = st.text_input("Enter pickup longitude manually")
-    manual_lat_input = st.text_input("Enter pickup latitude manually")
-
-    apply_pickup_manual = st.button("Apply manual pickup coordinates")
+        apply_pickup_manual = st.button("Apply manual pickup coordinates")
 
     # Store applied values in session_state
     if "pickup_manual_lon" not in st.session_state:
@@ -123,7 +111,7 @@ with st.container(border=True):
             st.error("Invalid manual coordinates")
 
     st.markdown("---")
-    st.markdown("### Verify pickup position")
+
 
     # Priority: auto → manual applied
     pickup_lon = auto_longitude or st.session_state.pickup_manual_lon
@@ -143,8 +131,8 @@ with st.container(border=True):
 st.subheader("Dropoff Geolocation")
 with st.container(border=True):
 
-    drop_lon_input = st.text_input("Enter dropoff longitude manually")
-    drop_lat_input = st.text_input("Enter dropoff latitude manually")
+    drop_lon_input = st.text_input("Enter dropoff longitude manually", width=220)
+    drop_lat_input = st.text_input("Enter dropoff latitude manually", width=220)
 
     apply_dropoff_manual = st.button("Apply manual dropoff coordinates")
 
@@ -173,46 +161,61 @@ with st.container(border=True):
 
 
 
-st.markdown("---")
-st.subheader("💸 Fare Prediction")
 
+
+
+with st.sidebar:
+    st.subheader("Date & Time")
+    with st.container(border=True):
+
+        with st.container(horizontal=True):
+            date = st.date_input("Date", width=100)
+            time = st.time_input("Time", width=100, step=60)
+
+        st.write(f"Date & Time selected : {date} at {time}")
+
+    st.subheader("Passenger's details")
+    with st.container(border=True):
+        passenger_count = st.slider("Select passenger number", min_value=1, max_value=10)
 # Bouton pour lancer la prédiction
-if st.button("Get my prediction fare"):
+    st.markdown("---")
+    st.subheader("💸 Fare Prediction")
+    if st.button("Get my prediction fare"):
 
-    # --- Vérifications minimales ---
-    if pickup_lon is None or pickup_lat is None:
-        st.error("❌ Pickup coordinates missing.")
-    elif dropoff_lon is None or dropoff_lat is None:
-        st.error("❌ Dropoff coordinates missing.")
-    else:
-        st.info("⏳ Requesting fare prediction...")
+        # --- Vérifications minimales ---
+        if pickup_lon is None or pickup_lat is None:
+            st.error("❌ Pickup coordinates missing.")
+        elif dropoff_lon is None or dropoff_lat is None:
+            st.error("❌ Dropoff coordinates missing.")
+        else:
+            st.info("⏳ Requesting fare prediction...")
 
-        # Paramètres du GET
-        params = {
-            "pickup_datetime": f"{date} {time}",
-            "pickup_longitude": pickup_lon,
-            "pickup_latitude": pickup_lat,
-            "dropoff_longitude": dropoff_lon,
-            "dropoff_latitude": dropoff_lat,
-            "passenger_count": passenger_count
-        }
+            # Paramètres du GET
+            params = {
+                "pickup_datetime": f"{date} {time}",
+                "pickup_longitude": pickup_lon,
+                "pickup_latitude": pickup_lat,
+                "dropoff_longitude": dropoff_lon,
+                "dropoff_latitude": dropoff_lat,
+                "passenger_count": passenger_count
+            }
 
-        try:
-            response = requests.get(url, params=params)
+            try:
+                response = requests.get(url, params=params)
 
-            if response.status_code == 200:
-                result = response.json()
+                if response.status_code == 200:
+                    result = response.json()
 
-                # On suppose que l'API renvoie {"prediction": value}
-                predicted_fare = result.get("fare")
+                    # On suppose que l'API renvoie {"prediction": value}
+                    predicted_fare = result.get("fare")
 
-                if predicted_fare is not None:
-                    st.success(f"💰 Estimated Fare: **{round(predicted_fare, 2)} $**")
+                    if predicted_fare is not None:
+                        st.success(f"💰 Estimated Fare: **{round(predicted_fare, 2)} $**")
+                    else:
+                        st.warning("⚠️ API responded but no 'prediction' field was found.")
                 else:
-                    st.warning("⚠️ API responded but no 'prediction' field was found.")
-            else:
-                st.error(f"❌ API error: {response.status_code}")
-                st.json(response.json())
+                    st.error(f"❌ API error: {response.status_code}")
+                    st.json(response.json())
 
-        except Exception as e:
-            st.error(f"❌ Request failed: {e}")
+            except Exception as e:
+                st.error(f"❌ Request failed: {e}")
