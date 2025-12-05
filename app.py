@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_geolocation import streamlit_geolocation
 import folium
 from streamlit_folium import st_folium
-
+import requests
 
 # -------------------------------
 # Print a Folium map correctly
@@ -138,7 +138,7 @@ with st.container(border=True):
         if st.checkbox("Verify my destination position", key=4):
             print_map(dropoff_lon, dropoff_lat)
 
-import requests
+
 
 st.markdown("---")
 st.subheader("💸 Fare Prediction")
